@@ -1,93 +1,130 @@
-// Copyright (c) HashiCorp, Inc.
-// SPDX-License-Identifier: MPL-2.0
-
 package provider
 
 import (
 	"context"
-	"net/http"
+	"os"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/function"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hmada15/terraform-provider-webdock/api"
 )
 
-// Ensure ScaffoldingProvider satisfies various provider interfaces.
-var _ provider.Provider = &ScaffoldingProvider{}
-var _ provider.ProviderWithFunctions = &ScaffoldingProvider{}
+var _ provider.Provider = &webdockProvider{}
 
-// ScaffoldingProvider defines the provider implementation.
-type ScaffoldingProvider struct {
-	// version is set to the provider version on release, "dev" when the
-	// provider is built and ran locally, and "test" when running acceptance
-	// testing.
-	version string
+// webdockProvider is the provider implementation.
+type (
+	webdockProvider struct {
+		version string
+	}
+
+	webdockProviderModel struct {
+		Token types.String `tfsdk:"token"`
+	}
+)
+
+func New(version string) func() provider.Provider {
+	return func() provider.Provider {
+		return &webdockProvider{
+			version: version,
+		}
+	}
 }
 
-// ScaffoldingProviderModel describes the provider data model.
-type ScaffoldingProviderModel struct {
-	Endpoint types.String `tfsdk:"endpoint"`
-}
-
-func (p *ScaffoldingProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = "scaffolding"
+// Metadata returns the provider type name.
+func (p *webdockProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
+	resp.TypeName = "webdock"
 	resp.Version = p.version
 }
 
-func (p *ScaffoldingProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
+// Schema defines the provider-level schema for configuration data.
+func (p *webdockProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"endpoint": schema.StringAttribute{
-				MarkdownDescription: "Example provider attribute",
-				Optional:            true,
+			"token": schema.StringAttribute{
+				Required:  true,
+				Sensitive: true,
 			},
 		},
 	}
 }
 
-func (p *ScaffoldingProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	var data ScaffoldingProviderModel
+func (p *webdockProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	tflog.Info(ctx, "Configuring Token client")
+	// Retrieve provider data from configuration
+	var config webdockProviderModel
 
-	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	diags := req.Config.Get(ctx, &config)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if config.Token.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("token"),
+			"Unknown Token API Token",
+			"The provider cannot create the Token API client as there is an unknown configuration value for the Token API token. "+
+				"Either target apply the source of the value first, set the value statically in the configuration, or use the WEBDOCK_TOKEN environment variable.",
+		)
+	}
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Configuration values are now available.
-	// if data.Endpoint.IsNull() { /* ... */ }
+	token := os.Getenv("WEBDOCK_TOKEN")
 
-	// Example client configuration for data sources and resources
-	client := http.DefaultClient
+	if !config.Token.IsNull() {
+		token = config.Token.ValueString()
+	}
+
+	// If any of the expected configurations are missing, return
+	// errors with provider-specific guidance.
+
+	if token == "" {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("token"),
+			"Missing webdock API Token",
+			"The provider cannot create the webdock API client as there is a missing or empty value for the webdock API token. "+
+				"Set the token value in the configuration or use the WEBDOCK_TOKEN environment variable. "+
+				"If either is already set, ensure the value is not empty.",
+		)
+	}
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx = tflog.SetField(ctx, "webdock_token", token)
+
+	tflog.Debug(ctx, "Creating Token client")
+
+	// Create a new Token client using the configuration values
+	client := api.NewClient(token)
+
+	// Make the Token client available during DataSource and Resource
+
 	resp.DataSourceData = client
 	resp.ResourceData = client
+
+	tflog.Info(ctx, "Configured webdock client", map[string]any{"success": true})
 }
 
-func (p *ScaffoldingProvider) Resources(ctx context.Context) []func() resource.Resource {
-	return []func() resource.Resource{
-		NewExampleResource,
-	}
-}
-
-func (p *ScaffoldingProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
+// DataSources defines the data sources implemented in the provider.
+func (p *webdockProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		NewExampleDataSource,
+		NewServerDataSource,
 	}
 }
 
-func (p *ScaffoldingProvider) Functions(ctx context.Context) []func() function.Function {
-	return []func() function.Function{
-		NewExampleFunction,
-	}
-}
-
-func New(version string) func() provider.Provider {
-	return func() provider.Provider {
-		return &ScaffoldingProvider{
-			version: version,
-		}
+// Resources defines the resources implemented in the provider.
+func (p *webdockProvider) Resources(_ context.Context) []func() resource.Resource {
+	return []func() resource.Resource{
+		//
 	}
 }
