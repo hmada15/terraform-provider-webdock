@@ -32,11 +32,9 @@ type ServerDataSourceModel struct {
 	Status                 types.String `tfsdk:"status"`
 	Virtualization         types.String `tfsdk:"virtualization"`
 	WebServer              types.String `tfsdk:"web_server"`
-	Description            types.String `tfsdk:"description"`
 	SnapshotRunTime        types.Int64  `tfsdk:"snapshot_run_time"`
 	WordPressLockDown      types.Bool   `tfsdk:"word_press_lock_down"`
 	SSHPasswordAuthEnabled types.Bool   `tfsdk:"ssh_password_auth_enabled"`
-	NextActionDate         types.String `tfsdk:"next_action_date"`
 }
 
 func NewServerDataSource() datasource.DataSource {
@@ -87,16 +85,10 @@ func (d *ServerDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 			"snapshot_run_time": schema.Int64Attribute{
 				Computed: true,
 			},
-			"description": schema.StringAttribute{
-				Computed: true,
-			},
 			"word_press_lock_down": schema.BoolAttribute{
 				Computed: true,
 			},
 			"ssh_password_auth_enabled": schema.BoolAttribute{
-				Computed: true,
-			},
-			"next_action_date": schema.StringAttribute{
 				Computed: true,
 			},
 		},
@@ -152,10 +144,8 @@ func (d *ServerDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		Virtualization:         types.StringValue(server.Virtualization),
 		WebServer:              types.StringValue(server.WebServer),
 		SnapshotRunTime:        types.Int64Value(server.SnapshotRunTime),
-		Description:            types.StringValue(server.Description),
 		WordPressLockDown:      types.BoolValue(server.WordPressLockDown),
 		SSHPasswordAuthEnabled: types.BoolValue(server.SSHPasswordAuthEnabled),
-		NextActionDate:         types.StringValue(server.NextActionDate),
 	}
 
 	// Set state

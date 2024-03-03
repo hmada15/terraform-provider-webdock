@@ -125,6 +125,6 @@ func (p *webdockProvider) DataSources(_ context.Context) []func() datasource.Dat
 // Resources defines the resources implemented in the provider.
 func (p *webdockProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		//
+		NewServerResource,
 	}
 }
