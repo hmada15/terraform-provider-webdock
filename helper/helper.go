@@ -1,17 +1,25 @@
 package helper
 
 import (
-	"io"
+	"bytes"
+	"context"
 	"net/http"
 )
 
-func NewWebdockRequest(method, url string, body io.Reader, token string) (*http.Response, error) {
-	req, err := http.NewRequest(method, url, body)
+const (
+	YES = "yes"
+	NO  = "no"
+)
+
+func NewWebdockRequest(ctx context.Context, method, url string, body []byte, token string) (*http.Response, error) {
+	bodyReader := bytes.NewReader(body)
+	req, err := http.NewRequest(method, url, bodyReader)
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Add("Content-Type", "application/json")
 	client := &http.Client{}
 
 	resp, err := client.Do(req)
