@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -17,9 +18,10 @@ import (
 
 // implement resource interfaces.
 var (
-	_ resource.Resource               = &ServerResource{}
-	_ resource.ResourceWithConfigure  = &ServerResource{}
-	_ resource.ResourceWithModifyPlan = &ServerResource{}
+	_ resource.Resource                = &ServerResource{}
+	_ resource.ResourceWithConfigure   = &ServerResource{}
+	_ resource.ResourceWithModifyPlan  = &ServerResource{}
+	_ resource.ResourceWithImportState = &ServerResource{}
 )
 
 // NewServerResource is a helper function to simplify the provider implementation.
@@ -201,6 +203,11 @@ func (s *ServerResource) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 	}
 }
 
+// Import using slug as the attribute
+func (s *ServerResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("slug"), req, resp)
+}
+
 // Create a new resource.
 func (s *ServerResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	tflog.Debug(ctx, "create server")
@@ -316,8 +323,7 @@ func (s *ServerResource) Read(ctx context.Context, req resource.ReadRequest, res
 }
 
 func (s *ServerResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// updateing resource is not supported
-	return
+	// updating resource is not supported
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
