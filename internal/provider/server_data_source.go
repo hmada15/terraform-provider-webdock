@@ -50,46 +50,60 @@ func (d *ServerDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"slug": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "Server slug",
 			},
 			"name": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Server name",
 			},
 			"date": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Creation date/time",
 			},
 			"location": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Location ID of the server",
 			},
 			"image": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Server image",
 			},
 			"profile": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Server profile",
 			},
 			"ipv4": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "IPv4 address",
 			},
 			"ipv6": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "IPv6 address",
 			},
 			"status": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Server status Enum: provisioning, running, stopped, error, rebooting, starting, stopping, reinstalling",
 			},
 			"virtualization": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Server virtualization type indicating whether it's a Webdock LXD VPS or a KVM Virtual Machine Enum: container, kvm",
 			},
 			"web_server": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Webserver type Enum: Apache, Nginx, None",
 			},
 			"snapshot_run_time": schema.Int64Attribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Last known snapshot runtime (seconds)",
 			},
 			"word_press_lock_down": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Wordpress lockdown status",
 			},
 			"ssh_password_auth_enabled": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "SSH Password Authentication Enabled for this Server",
 			},
 		},
 	}
