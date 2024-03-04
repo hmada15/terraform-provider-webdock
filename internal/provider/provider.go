@@ -122,6 +122,7 @@ func (p *webdockProvider) DataSources(_ context.Context) []func() datasource.Dat
 		NewServerDataSource,
 		NewLocationDataSource,
 		NewProfileDataSource,
+		NewImagesDataSource,
 	}
 }
 
