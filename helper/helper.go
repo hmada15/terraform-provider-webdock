@@ -11,6 +11,7 @@ const (
 	NO  = "no"
 )
 
+// NewWebdockRequest send a request with auth token and set common http headers
 func NewWebdockRequest(ctx context.Context, method, url string, body []byte, token string) (*http.Response, error) {
 	bodyReader := bytes.NewReader(body)
 	req, err := http.NewRequest(method, url, bodyReader)
@@ -20,6 +21,7 @@ func NewWebdockRequest(ctx context.Context, method, url string, body []byte, tok
 
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept-Encoding", "application/json")
 	client := &http.Client{}
 
 	resp, err := client.Do(req)
