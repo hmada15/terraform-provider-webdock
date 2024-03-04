@@ -120,6 +120,8 @@ func (p *webdockProvider) Configure(ctx context.Context, req provider.ConfigureR
 func (p *webdockProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewServerDataSource,
+		NewLocationDataSource,
+		NewProfileDataSource,
 	}
 }
 
